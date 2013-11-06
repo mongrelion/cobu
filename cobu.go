@@ -52,6 +52,7 @@ func handleRequest(res http.ResponseWriter, req *http.Request) {
         go updateCodebase()
         fmt.Fprint(res, "ok")
     } else {
+        log.Printf("Deployment request coming from %s ignored\n", req.Header.Get("X-Remote-IP"))
         http.NotFound(res, req)
     }
 }
