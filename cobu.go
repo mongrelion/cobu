@@ -52,14 +52,14 @@ func handleRequest(res http.ResponseWriter, req *http.Request) {
         go updateCodebase()
         fmt.Fprint(res, "ok")
     } else {
-        log.Printf("Deployment request coming from %s ignored\n", req.Header.Get("X-Remote-IP"))
+        log.Printf("Deployment request coming from %s ignored\n", req.Header.Get("X-Real-Ip"))
         http.NotFound(res, req)
     }
 }
 
 func requestComesFromGithub(req *http.Request) bool {
     r := regexp.MustCompile(`192\.30\.252\.\d{1,3}`)
-    return r.MatchString(req.Header.Get("X-Remote-IP"))
+    return r.MatchString(req.Header.Get("X-Real-Ip"))
 }
 
 func main() {
