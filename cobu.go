@@ -2,10 +2,11 @@ package main
 
 import (
     "fmt"
-    "os"
-    "os/exec"
     "log"
     "net/http"
+    "os"
+    "os/exec"
+    "regexp"
 )
 
 var (
@@ -36,6 +37,7 @@ func updateCodebase() {
     }
     log.Printf("Updating code base on %s", pPath)
     err = cmd.Wait()
+    // TODO: Don't die if updating codebase update fails.
     if err != nil {
         log.Fatal("Error while updating code base: ", err)
     } else {
@@ -44,10 +46,19 @@ func updateCodebase() {
     }
 }
 
-func handleRequest(w http.ResponseWriter, req *http.Request) {
-    log.Println("Handling deployment request")
-    go updateCodebase()
-    fmt.Fprint(w, "ok")
+func handleRequest(res http.ResponseWriter, req *http.Request) {
+    if requestComesFromGithub(req) {
+        log.Println("Handling deployment request")
+        go updateCodebase()
+        fmt.Fprint(res, "ok")
+    } else {
+        http.NotFound(res, req)
+    }
+}
+
+func requestComesFromGithub(req *http.Request) bool {
+    r := regexp.MustCompile(`192\.30\.252\.\d{1,3}`)
+    return r.MatchString(req.Header.Get("X-Remote-IP"))
 }
 
 func main() {
